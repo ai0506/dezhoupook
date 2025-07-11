@@ -438,6 +438,17 @@
     </style>
 </head>
 <body>
+    <!-- 新增提示弹窗代码 -->
+    <div id="update提示" style="position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.7); z-index:9999; display:flex; align-items:center; justify-content:center; padding:20px;">
+        <div style="background:#0a1929; border-radius:15px; padding:30px; max-width:500px; border:2px solid #ffd700; text-align:center;">
+            <h3 style="color:#ffd700; margin-bottom:15px; font-size:1.5rem;">建议使用最新版本</h3>
+            <p style="color:#a0c4ff; margin-bottom:25px; line-height:1.6;">当前版本可能存在Bug，建议划到最下面进入新版</p>
+            <button onclick="document.getElementById('update提示').style.display='none'" style="background:transparent; color:#a0c4ff; border:none; margin-top:15px; cursor:pointer; text-decoration:underline;">
+                继续使用当前版本
+            </button>
+        </div>
+    </div>
+    <!-- 新增提示弹窗代码结束 -->
     <div class="container">
         <header>
             <h1><i class="fas fa-spade"></i> 德州扑克筹码管理系统 <i class="fas fa-heart"></i></h1>
