@@ -1,0 +1,916 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>德州扑克筹码管理系统</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #0a1929, #1a3a5f);
+            color: #fff;
+            min-height: 100vh;
+            padding: 20px;
+            background-attachment: fixed;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        header {
+            text-align: center;
+            padding: 25px 0;
+            margin-bottom: 30px;
+            border-bottom: 3px solid #ffd700;
+            background: rgba(0, 20, 40, 0.7);
+            border-radius: 10px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        header::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" preserveAspectRatio="none"><path d="M0,0 L100,0 L100,100 Z" fill="rgba(255,215,0,0.1)"/></svg>');
+            background-size: cover;
+            opacity: 0.3;
+        }
+        
+        h1 {
+            font-size: 2.8rem;
+            margin-bottom: 10px;
+            color: #ffd700;
+            text-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+            position: relative;
+        }
+        
+        .subtitle {
+            font-size: 1.3rem;
+            color: #a0c4ff;
+            max-width: 600px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+        
+        .card {
+            background: rgba(10, 25, 47, 0.85);
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            border: 1px solid #1e3a5f;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .card::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #ff8c00, #ffd700, #ff8c00);
+        }
+        
+        .card-title {
+            font-size: 1.8rem;
+            margin-bottom: 20px;
+            color: #ffd700;
+            padding-bottom: 12px;
+            border-bottom: 2px solid #2a4d7a;
+            display: flex;
+            align-items: center;
+        }
+        
+        .card-title i {
+            margin-right: 12px;
+            font-size: 1.5rem;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #4fc3f7;
+            font-size: 1.1rem;
+        }
+        
+        input, select, button {
+            width: 100%;
+            padding: 14px;
+            border: none;
+            border-radius: 8px;
+            background: rgba(30, 50, 80, 0.7);
+            color: white;
+            font-size: 1.05rem;
+            margin-top: 5px;
+            transition: all 0.3s ease;
+        }
+        
+        input:focus, select:focus {
+            outline: 2px solid #ffd700;
+            background: rgba(40, 60, 90, 0.8);
+            box-shadow: 0 0 10px rgba(255, 215, 0, 0.3);
+        }
+        
+        button {
+            background: linear-gradient(to right, #ff8c00, #ffd700);
+            color: #0a1929;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 10px;
+            font-size: 1.1rem;
+            letter-spacing: 0.5px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 7px 15px rgba(255, 215, 0, 0.4);
+        }
+        
+        button:active {
+            transform: translateY(1px);
+        }
+        
+        button::after {
+            content: "";
+            position: absolute;
+            top: -50%;
+            left: -60%;
+            width: 20px;
+            height: 200%;
+            background: rgba(255, 255, 255, 0.3);
+            transform: rotate(25deg);
+            transition: all 0.5s;
+        }
+        
+        button:hover::after {
+            left: 120%;
+        }
+        
+        .btn-small {
+            padding: 10px 18px;
+            font-size: 0.95rem;
+            width: auto;
+            margin: 0 5px;
+        }
+        
+        .btn-red {
+            background: linear-gradient(to right, #d31027, #ff416c);
+        }
+        
+        .btn-green {
+            background: linear-gradient(to right, #00b09b, #96c93d);
+        }
+        
+        .btn-blue {
+            background: linear-gradient(to right, #1e3c72, #2a5298);
+        }
+        
+        .player-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 25px;
+            margin-top: 20px;
+        }
+        
+        .player-card {
+            background: linear-gradient(135deg, #1a2a6c, #203a75);
+            border-radius: 12px;
+            padding: 25px;
+            border: 2px solid #2a4d7a;
+            position: relative;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+        
+        .player-card:hover {
+            transform: translateY(-7px);
+            box-shadow: 0 12px 25px rgba(0, 0, 0, 0.4);
+            border-color: #ffd700;
+        }
+        
+        .player-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid rgba(255, 215, 0, 0.3);
+        }
+        
+        .player-name {
+            font-size: 1.6rem;
+            font-weight: bold;
+            color: #ffd700;
+        }
+        
+        .player-controls {
+            display: flex;
+            gap: 8px;
+        }
+        
+        .player-chips {
+            font-size: 2rem;
+            color: #4CAF50;
+            text-align: center;
+            margin: 20px 0;
+            font-weight: bold;
+            text-shadow: 0 0 8px rgba(76, 175, 80, 0.4);
+        }
+        
+        .chip-controls {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+            align-items: center;
+        }
+        
+        .chip-input {
+            width: 65%;
+            padding: 10px;
+            font-size: 1.1rem;
+        }
+        
+        .betting-rounds {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 25px;
+            margin-top: 20px;
+        }
+        
+        .round {
+            background: rgba(20, 40, 70, 0.8);
+            padding: 20px;
+            border-radius: 12px;
+            border: 1px solid #2a4d7a;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .round::after {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 5px;
+            background: linear-gradient(90deg, #ff8c00, #ffd700);
+        }
+        
+        .round-title {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #ffd700;
+            font-size: 1.4rem;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #3a5d8f;
+        }
+        
+        .winner-section {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 25px;
+            align-items: center;
+            margin-top: 15px;
+        }
+        
+        .winner-select {
+            flex: 1;
+            min-width: 300px;
+        }
+        
+        .chip {
+            display: inline-block;
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 45px;
+            font-weight: bold;
+            margin: 0 3px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+            font-size: 0.9rem;
+            border: 2px solid rgba(255, 255, 255, 0.5);
+        }
+        
+        .chip-25 { background: linear-gradient(135deg, #00b09b, #96c93d); color: #000; }
+        .chip-100 { background: linear-gradient(135deg, #1e3c72, #2a5298); color: #fff; }
+        .chip-500 { background: linear-gradient(135deg, #ff416c, #ff4b2b); color: #fff; }
+        .chip-1000 { background: linear-gradient(135deg, #000000, #434343); color: #ffd700; }
+        .chip-5000 { background: linear-gradient(135deg, #834d9b, #d04ed6); color: #fff; }
+        
+        .chip-demo {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin: 25px 0;
+            flex-wrap: wrap;
+        }
+        
+        .player-status {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: #ffd700;
+            color: #000;
+            padding: 6px 15px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: bold;
+            z-index: 2;
+        }
+        
+        footer {
+            text-align: center;
+            padding: 25px;
+            margin-top: 40px;
+            color: #7f9ccc;
+            font-size: 1rem;
+            border-top: 1px solid #2a4d7a;
+        }
+        
+        .game-controls {
+            display: flex;
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .player-select {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 15px;
+            padding: 10px;
+            background: rgba(30, 50, 80, 0.4);
+            border-radius: 8px;
+        }
+        
+        .player-select input {
+            width: auto;
+            margin: 0;
+        }
+        
+        .player-select label {
+            margin: 0;
+            font-size: 1.1rem;
+            color: #fff;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 30px;
+            color: #7f9ccc;
+            font-size: 1.2rem;
+        }
+        
+        .empty-state i {
+            font-size: 3rem;
+            margin-bottom: 20px;
+            color: #ffd700;
+            opacity: 0.7;
+        }
+        
+        .winner-banner {
+            text-align: center;
+            padding: 20px;
+            margin-top: 20px;
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 10px;
+            animation: winnerPulse 2s infinite;
+        }
+        
+        @keyframes winnerPulse {
+            0% { box-shadow: 0 0 0 0 rgba(255, 215, 0, 0.4); }
+            70% { box-shadow: 0 0 0 15px rgba(255, 215, 0, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(255, 215, 0, 0); }
+        }
+        
+        .winner-name {
+            font-size: 1.5rem;
+            color: #ffd700;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+        
+        @media (max-width: 768px) {
+            .betting-rounds {
+                grid-template-columns: 1fr;
+            }
+            
+            .player-list {
+                grid-template-columns: 1fr;
+            }
+            
+            .winner-section {
+                flex-direction: column;
+            }
+            
+            .game-controls {
+                flex-direction: column;
+            }
+            
+            h1 {
+                font-size: 2.2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1><i class="fas fa-spade"></i> 德州扑克筹码管理系统 <i class="fas fa-heart"></i></h1>
+            <div class="subtitle">轻松管理玩家筹码、下注记录和游戏结算 - 所有数据使用localStorage本地存储</div>
+        </header>
+        
+        <div class="card">
+            <h2 class="card-title"><i class="fas fa-user-plus"></i> 添加玩家</h2>
+            <div class="form-group">
+                <label for="playerName"><i class="fas fa-user"></i> 玩家姓名</label>
+                <input type="text" id="playerName" placeholder="输入玩家姓名">
+            </div>
+            <div class="form-group">
+                <label for="initialChips"><i class="fas fa-coins"></i> 初始筹码</label>
+                <input type="number" id="initialChips" value="2000" min="100">
+            </div>
+            <button id="addPlayerBtn"><i class="fas fa-plus-circle"></i> 添加玩家</button>
+        </div>
+        
+        <div class="card">
+            <h2 class="card-title"><i class="fas fa-users"></i> 玩家列表</h2>
+            <div class="chip-demo">
+                <div class="chip chip-25">25</div>
+                <div class="chip chip-100">100</div>
+                <div class="chip chip-500">500</div>
+                <div class="chip chip-1000">1K</div>
+                <div class="chip chip-5000">5K</div>
+            </div>
+            <div class="player-list" id="playerList">
+                <!-- 玩家卡片将在这里动态生成 -->
+            </div>
+        </div>
+        
+        <div class="card">
+            <h2 class="card-title"><i class="fas fa-dice"></i> 游戏设置</h2>
+            <div id="playerSelection">
+                <!-- 玩家选择区域 -->
+            </div>
+            <div class="game-controls">
+                <button id="startGameBtn" class="btn-green"><i class="fas fa-play"></i> 开始游戏</button>
+                <button id="resetGameBtn" class="btn-red"><i class="fas fa-redo"></i> 重置游戏</button>
+            </div>
+        </div>
+        
+        <div class="card">
+            <h2 class="card-title"><i class="fas fa-list-alt"></i> 下注记录</h2>
+            <div class="betting-rounds" id="bettingRounds">
+                <!-- 下注轮次将在这里动态生成 -->
+            </div>
+        </div>
+        
+        <div class="card">
+            <h2 class="card-title"><i class="fas fa-trophy"></i> 游戏结算</h2>
+            <div class="winner-section">
+                <div class="winner-select">
+                    <label for="winnerSelect"><i class="fas fa-crown"></i> 选择赢家</label>
+                    <select id="winnerSelect">
+                        <option value="">-- 请选择赢家 --</option>
+                    </select>
+                </div>
+                <div>
+                    <button id="settleGameBtn" class="btn-blue"><i class="fas fa-calculator"></i> 结算游戏</button>
+                </div>
+            </div>
+            <div id="winnerResult">
+                <!-- 赢家结果将在这里显示 -->
+            </div>
+        </div>
+        
+        <footer>
+            <p>德州扑克筹码管理系统 &copy; 2023 | 数据使用localStorage存储 | 设计：扑克大师</p>
+        </footer>
+    </div>
+    
+    <script>
+        // 数据模型
+        let players = JSON.parse(localStorage.getItem('pokerPlayers')) || [];
+        let gameRounds = JSON.parse(localStorage.getItem('pokerRounds')) || [
+            { name: "第一轮", bets: {} },
+            { name: "第二轮", bets: {} },
+            { name: "第三轮", bets: {} }
+        ];
+        let gameStarted = JSON.parse(localStorage.getItem('gameStarted')) || false;
+        let selectedPlayers = JSON.parse(localStorage.getItem('selectedPlayers')) || [];
+        
+        // DOM元素
+        const playerList = document.getElementById('playerList');
+        const playerSelection = document.getElementById('playerSelection');
+        const bettingRounds = document.getElementById('bettingRounds');
+        const playerNameInput = document.getElementById('playerName');
+        const initialChipsInput = document.getElementById('initialChips');
+        const addPlayerBtn = document.getElementById('addPlayerBtn');
+        const winnerSelect = document.getElementById('winnerSelect');
+        const settleGameBtn = document.getElementById('settleGameBtn');
+        const resetGameBtn = document.getElementById('resetGameBtn');
+        const startGameBtn = document.getElementById('startGameBtn');
+        const winnerResult = document.getElementById('winnerResult');
+        
+        // 初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            renderPlayerList();
+            renderPlayerSelection();
+            renderBettingRounds();
+            updateWinnerSelect();
+            
+            if (gameStarted) {
+                startGameBtn.disabled = true;
+                startGameBtn.textContent = "游戏进行中";
+            }
+        });
+        
+        // 添加玩家
+        addPlayerBtn.addEventListener('click', function() {
+            const name = playerNameInput.value.trim();
+            const chips = parseInt(initialChipsInput.value);
+            
+            if (!name) {
+                alert('请输入玩家姓名');
+                return;
+            }
+            
+            if (isNaN(chips) || chips < 100) {
+                alert('请输入有效的筹码数量（至少100）');
+                return;
+            }
+            
+            if (players.some(player => player.name === name)) {
+                alert('该玩家已存在');
+                return;
+            }
+            
+            players.push({
+                id: Date.now(),
+                name: name,
+                chips: chips,
+                initialChips: chips,
+                inGame: false
+            });
+            
+            savePlayers();
+            renderPlayerList();
+            renderPlayerSelection();
+            updateWinnerSelect();
+            
+            // 清空输入
+            playerNameInput.value = '';
+            playerNameInput.focus();
+        });
+        
+        // 删除玩家
+        function deletePlayer(playerId) {
+            if (confirm('确定要删除该玩家吗？所有相关数据将被移除')) {
+                players = players.filter(player => player.id !== playerId);
+                savePlayers();
+                renderPlayerList();
+                renderPlayerSelection();
+                updateWinnerSelect();
+            }
+        }
+        
+        // 更新筹码
+        function updateChips(playerId, amount) {
+            const player = players.find(p => p.id === playerId);
+            if (player) {
+                player.chips += amount;
+                savePlayers();
+                renderPlayerList();
+            }
+        }
+        
+        // 保存玩家数据
+        function savePlayers() {
+            localStorage.setItem('pokerPlayers', JSON.stringify(players));
+        }
+        
+        // 保存游戏轮次数据
+        function saveRounds() {
+            localStorage.setItem('pokerRounds', JSON.stringify(gameRounds));
+        }
+        
+        // 保存游戏状态
+        function saveGameState() {
+            localStorage.setItem('gameStarted', JSON.stringify(gameStarted));
+            localStorage.setItem('selectedPlayers', JSON.stringify(selectedPlayers));
+        }
+        
+        // 渲染玩家列表
+        function renderPlayerList() {
+            playerList.innerHTML = '';
+            
+            if (players.length === 0) {
+                playerList.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-user-slash"></i>
+                        <p>暂无玩家，请添加玩家开始游戏</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            players.forEach(player => {
+                const playerCard = document.createElement('div');
+                playerCard.className = 'player-card';
+                playerCard.innerHTML = `
+                    <div class="player-header">
+                        <div class="player-name">${player.name}</div>
+                        <div class="player-controls">
+                            <button class="btn-small btn-red" onclick="deletePlayer(${player.id})">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="player-chips">${player.chips.toLocaleString()}</div>
+                    <div class="form-group">
+                        <label><i class="fas fa-exchange-alt"></i> 调整筹码</label>
+                        <div class="chip-controls">
+                            <input type="number" class="chip-input" id="adjust-${player.id}" value="100" min="1">
+                            <button class="btn-small" onclick="updateChips(${player.id}, parseInt(document.getElementById('adjust-${player.id}').value))">
+                                <i class="fas fa-plus"></i> 增加
+                            </button>
+                            <button class="btn-small btn-red" onclick="updateChips(${player.id}, -parseInt(document.getElementById('adjust-${player.id}').value))">
+                                <i class="fas fa-minus"></i> 减少
+                            </button>
+                        </div>
+                    </div>
+                `;
+                playerList.appendChild(playerCard);
+            });
+        }
+        
+        // 渲染玩家选择区域
+        function renderPlayerSelection() {
+            playerSelection.innerHTML = '';
+            
+            if (players.length === 0) {
+                playerSelection.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-user-plus"></i>
+                        <p>添加玩家后选择参与游戏的玩家</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            const selectionTitle = document.createElement('h3');
+            selectionTitle.style.color = '#ffd700';
+            selectionTitle.style.marginBottom = '15px';
+            selectionTitle.innerHTML = '<i class="fas fa-check-circle"></i> 选择参与游戏的玩家';
+            playerSelection.appendChild(selectionTitle);
+            
+            players.forEach(player => {
+                const playerSelect = document.createElement('div');
+                playerSelect.className = 'player-select';
+                playerSelect.innerHTML = `
+                    <input type="checkbox" id="select-${player.id}" 
+                           ${player.inGame ? 'checked' : ''}
+                           onchange="togglePlayerInGame(${player.id}, this.checked)">
+                    <label for="select-${player.id}">${player.name} (${player.chips.toLocaleString()} 筹码)</label>
+                `;
+                playerSelection.appendChild(playerSelect);
+            });
+        }
+        
+        // 切换玩家游戏状态
+        function togglePlayerInGame(playerId, inGame) {
+            const player = players.find(p => p.id === playerId);
+            if (player) {
+                player.inGame = inGame;
+                savePlayers();
+                
+                // 更新选中的玩家列表
+                if (inGame && !selectedPlayers.includes(playerId)) {
+                    selectedPlayers.push(playerId);
+                } else if (!inGame) {
+                    selectedPlayers = selectedPlayers.filter(id => id !== playerId);
+                }
+                saveGameState();
+            }
+        }
+        
+        // 开始游戏
+        startGameBtn.addEventListener('click', function() {
+            const inGamePlayers = players.filter(player => player.inGame);
+            
+            if (inGamePlayers.length < 2) {
+                alert('请至少选择2名玩家开始游戏');
+                return;
+            }
+            
+            gameStarted = true;
+            saveGameState();
+            
+            startGameBtn.disabled = true;
+            startGameBtn.textContent = "游戏进行中";
+            
+            alert(`游戏开始！共 ${inGamePlayers.length} 名玩家参与`);
+            
+            // 重置下注记录
+            gameRounds.forEach(round => {
+                round.bets = {};
+            });
+            saveRounds();
+            renderBettingRounds();
+            
+            // 更新赢家选择下拉框
+            updateWinnerSelect();
+        });
+        
+        // 渲染下注轮次
+        function renderBettingRounds() {
+            bettingRounds.innerHTML = '';
+            
+            if (!gameStarted) {
+                bettingRounds.innerHTML = `
+                    <div class="empty-state" style="grid-column: 1 / span 3">
+                        <i class="fas fa-play-circle"></i>
+                        <p>请选择玩家并开始游戏后记录下注</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            const inGamePlayers = players.filter(player => player.inGame);
+            
+            if (inGamePlayers.length === 0) {
+                bettingRounds.innerHTML = `
+                    <div class="empty-state" style="grid-column: 1 / span 3">
+                        <i class="fas fa-user-times"></i>
+                        <p>没有玩家参与游戏，请重新选择玩家</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            gameRounds.forEach((round, index) => {
+                const roundElement = document.createElement('div');
+                roundElement.className = 'round';
+                roundElement.innerHTML = `
+                    <div class="round-title">${round.name}</div>
+                `;
+                
+                inGamePlayers.forEach(player => {
+                    const betValue = round.bets[player.id] || 0;
+                    roundElement.innerHTML += `
+                        <div class="form-group">
+                            <label><i class="fas fa-user"></i> ${player.name}</label>
+                            <input type="number" 
+                                   id="bet-${index}-${player.id}" 
+                                   value="${betValue}" 
+                                   min="0"
+                                   onchange="updateBet(${index}, ${player.id}, this.value)">
+                        </div>
+                    `;
+                });
+                
+                bettingRounds.appendChild(roundElement);
+            });
+        }
+        
+        // 更新下注记录
+        function updateBet(roundIndex, playerId, amount) {
+            amount = parseInt(amount) || 0;
+            gameRounds[roundIndex].bets[playerId] = amount;
+            saveRounds();
+        }
+        
+        // 更新赢家选择下拉框
+        function updateWinnerSelect() {
+            winnerSelect.innerHTML = '<option value="">-- 请选择赢家 --</option>';
+            
+            const inGamePlayers = players.filter(player => player.inGame);
+            if (inGamePlayers.length === 0) return;
+            
+            inGamePlayers.forEach(player => {
+                const option = document.createElement('option');
+                option.value = player.id;
+                option.textContent = `${player.name} (${player.chips.toLocaleString()} 筹码)`;
+                winnerSelect.appendChild(option);
+            });
+        }
+        
+        // 结算游戏
+        settleGameBtn.addEventListener('click', function() {
+            if (!gameStarted) {
+                alert('请先开始游戏');
+                return;
+            }
+            
+            const winnerId = parseInt(winnerSelect.value);
+            if (!winnerId) {
+                alert('请选择赢家');
+                return;
+            }
+            
+            // 计算总底池
+            let totalPot = 0;
+            gameRounds.forEach(round => {
+                Object.values(round.bets).forEach(bet => {
+                    totalPot += bet;
+                });
+            });
+            
+            // 更新赢家筹码
+            const winner = players.find(p => p.id === winnerId);
+            if (winner) {
+                winner.chips += totalPot;
+                
+                // 扣除其他玩家的下注
+                players.forEach(player => {
+                    if (player.inGame && player.id !== winnerId) {
+                        let playerBets = 0;
+                        gameRounds.forEach(round => {
+                            playerBets += round.bets[player.id] || 0;
+                        });
+                        player.chips -= playerBets;
+                        
+                        // 确保筹码不为负数
+                        if (player.chips < 0) player.chips = 0;
+                    }
+                });
+                
+                savePlayers();
+                renderPlayerList();
+                updateWinnerSelect();
+                
+                // 重置下注记录
+                gameRounds.forEach(round => {
+                    round.bets = {};
+                });
+                saveRounds();
+                renderBettingRounds();
+                
+                // 显示赢家信息
+                winnerResult.innerHTML = `
+                    <div class="winner-banner">
+                        <h3><i class="fas fa-crown"></i> 游戏结算完成</h3>
+                        <div class="winner-name">${winner.name}</div>
+                        <p>赢得 <span style="color:#4CAF50; font-weight:bold; font-size:1.5rem;">${totalPot.toLocaleString()}</span> 筹码！</p>
+                        <p>当前总筹码: ${winner.chips.toLocaleString()}</p>
+                    </div>
+                `;
+            }
+        });
+        
+        // 重置游戏
+        resetGameBtn.addEventListener('click', function() {
+            if (confirm('确定要重置游戏吗？所有玩家筹码将恢复初始值，下注记录将被清除')) {
+                players.forEach(player => {
+                    player.chips = player.initialChips;
+                    player.inGame = false;
+                });
+                
+                gameRounds.forEach(round => {
+                    round.bets = {};
+                });
+                
+                gameStarted = false;
+                selectedPlayers = [];
+                winnerResult.innerHTML = '';
+                
+                savePlayers();
+                saveRounds();
+                saveGameState();
+                
+                renderPlayerList();
+                renderPlayerSelection();
+                renderBettingRounds();
+                updateWinnerSelect();
+                
+                startGameBtn.disabled = false;
+                startGameBtn.textContent = "开始游戏";
+            }
+        });
+    </script>
+</body>
+</html>
