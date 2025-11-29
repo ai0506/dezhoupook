@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>猜猜我是谁 - TF4代练习生版</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "Microsoft YaHei", sans-serif;
+        }
+        
+        body {
+            background-color: #f0f0f0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background-color: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        .selected-area {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 20px;
+            padding: 15px;
+            background-color: #f9f9f9;
+            border-radius: 8px;
+        }
+
+        .selected-img {
+            width: 150px;
+            height: 225px;
+            object-fit: cover;
+            border-radius: 5px;
+            margin-bottom: 10px;
+            border: 2px solid #ddd;
+        }
+
+        .selected-info {
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .action-btn {
+            padding: 8px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        .action-btn:hover {
+            background-color: #45a049;
+        }
+
+        .trainee-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+            gap: 15px;
+        }
+
+        .trainee-card {
+            text-align: center;
+            cursor: pointer;
+            border-radius: 5px;
+            overflow: hidden;
+            background-color: #f5f5f5;
+            transition: transform 0.2s;
+        }
+
+        .trainee-card:hover {
+            transform: scale(1.03);
+        }
+
+        .trainee-card.selected {
+            box-shadow: 0 0 0 2px #4CAF50;
+        }
+
+        .trainee-img {
+            width: 100%;
+            height: 180px;
+            object-fit: cover;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .trainee-name {
+            padding: 8px 5px;
+            font-size: 14px;
+        }
+
+        .status {
+            text-align: center;
+            margin: 15px 0;
+            padding: 8px;
+            background-color: #e7f3ff;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>猜猜我是谁 - TF4代练习生版</h1>
+
+        <div class="selected-area">
+            <img src="default.png" class="selected-img" id="selected-img" alt="选中的角色">
+            <div class="selected-info" id="selected-info">尚未选择角色</div>
+            <button class="action-btn" id="action-btn">确认选择</button>
+        </div>
+
+        <div class="status" id="status">请选择你的角色</div>
+
+        <div class="trainee-grid" id="trainee-grid">
+            <!-- 练习生卡片将通过JavaScript动态生成 -->
+        </div>
+    </div>
+
+    <script>
+        // 练习生数据
+        const trainees = [
+            "杨博文", "张桂源", "陈奕恒", "王橹杰", "左奇函",
+            "陈浚铭", "张函瑞", "张奕然", "陈思罕", "李煜东",
+            "杨涵博", "聂玮辰", "魏子宸", "官俊臣"
+        ];
+
+        // 游戏状态
+        const gameState = {
+            selected: null,
+            confirmed: false,
+            eliminated: [],
+            showSelected: false // 是否显示选中的角色
+        };
+
+        // 初始化游戏
+        function initGame() {
+            // 生成练习生卡片
+            generateTraineeCards();
+
+            // 添加事件监听器
+            document.getElementById('action-btn').addEventListener('click', toggleAction);
+
+            // 初始状态更新
+            updateStatus();
+        }
+
+        // 生成练习生卡片
+        function generateTraineeCards() {
+            const container = document.getElementById('trainee-grid');
+            container.innerHTML = '';
+
+            trainees.forEach(trainee => {
+                const card = document.createElement('div');
+                card.className = 'trainee-card';
+                card.dataset.name = trainee;
+
+                // 使用练习生名字作为图片文件名
+                const img = document.createElement('img');
+                img.className = 'trainee-img';
+                img.src = `${trainee}.png`;
+                img.alt = trainee;
+
+                // 如果图片加载失败，使用默认图片
+                img.onerror = function() {
+                    this.src = 'default.png';
+                };
+
+                const name = document.createElement('div');
+                name.className = 'trainee-name';
+                name.textContent = trainee;
+
+                card.appendChild(img);
+                card.appendChild(name);
+
+                // 添加点击事件
+                card.addEventListener('click', () => handleTraineeClick(trainee));
+
+                container.appendChild(card);
+            });
+        }
+
+        // 处理练习生点击
+        function handleTraineeClick(traineeName) {
+            // 如果已经确认选择
+            if (gameState.confirmed) {
+                // 切换排除状态
+                if (gameState.eliminated.includes(traineeName)) {
+                    // 恢复该练习生
+                    const index = gameState.eliminated.indexOf(traineeName);
+                    gameState.eliminated.splice(index, 1);
+
+                    // 恢复图片
+                    const card = document.querySelector(`.trainee-card[data-name="${traineeName}"]`);
+                    const img = card.querySelector('.trainee-img');
+                    img.src = `${traineeName}.png`;
+                } else {
+                    // 排除该练习生
+                    gameState.eliminated.push(traineeName);
+
+                    // 更换为默认图片
+                    const card = document.querySelector(`.trainee-card[data-name="${traineeName}"]`);
+                    const img = card.querySelector('.trainee-img');
+                    img.src = 'default.png';
+                }
+            } else {
+                // 选择角色阶段
+                gameState.selected = traineeName;
+                updateSelectionUI();
+            }
+        }
+
+        // 切换按钮功能
+        function toggleAction() {
+            if (!gameState.confirmed) {
+                // 确认选择
+                if (!gameState.selected) {
+                    alert('请先选择一个角色！');
+                    return;
+                }
+
+                gameState.confirmed = true;
+                document.getElementById('action-btn').textContent = '展示/隐藏';
+
+                // 确认后隐藏选择框中的角色，显示默认图片
+                document.getElementById('selected-img').src = 'default.png';
+                document.getElementById('selected-info').textContent = '已隐藏角色';
+
+                // 移除选中状态的绿色边框
+                const selectedCard = document.querySelector(`.trainee-card[data-name="${gameState.selected}"]`);
+                if (selectedCard) {
+                    selectedCard.classList.remove('selected');
+                }
+
+                updateStatus();
+            } else {
+                // 切换展示/隐藏选中的角色
+                gameState.showSelected = !gameState.showSelected;
+
+                if (gameState.showSelected) {
+                    // 显示选中的角色
+                    document.getElementById('selected-img').src = `${gameState.selected}.png`;
+                    document.getElementById('selected-info').textContent = `选中: ${gameState.selected}`;
+                } else {
+                    // 隐藏选中的角色，显示默认图片
+                    document.getElementById('selected-img').src = 'default.png';
+                    document.getElementById('selected-info').textContent = '已隐藏角色';
+                }
+            }
+        }
+
+        // 更新选择UI
+        function updateSelectionUI() {
+            const selectedImg = document.getElementById('selected-img');
+            const selectedInfo = document.getElementById('selected-info');
+
+            if (gameState.selected) {
+                selectedImg.src = `${gameState.selected}.png`;
+                selectedInfo.textContent = `选中: ${gameState.selected}`;
+
+                // 更新卡片选中状态
+                const cards = document.querySelectorAll('.trainee-card');
+                cards.forEach(card => {
+                    if (card.dataset.name === gameState.selected) {
+                        card.classList.add('selected');
+                    } else {
+                        card.classList.remove('selected');
+                    }
+                });
+            }
+        }
+
+        // 更新状态
+        function updateStatus() {
+            let status = '';
+            if (!gameState.selected) {
+                status = '请选择你的角色';
+            } else if (!gameState.confirmed) {
+                status = '请确认你的角色选择';
+            } else {
+                status = `已确认选择: ${gameState.selected} (已排除 ${gameState.eliminated.length} 个角色)`;
+            }
+            document.getElementById('status').textContent = status;
+        }
+        
+        // 初始化游戏
+        window.onload = initGame;
+    </script>
+</body>
+</html>
