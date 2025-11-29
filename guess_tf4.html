@@ -292,7 +292,7 @@
             } else if (!gameState.confirmed) {
                 status = '请确认你的角色选择';
             } else {
-                status = `已确认选择: ${gameState.selected} (已排除 ${gameState.eliminated.length} 个角色)`;
+                status = `已确认选择`;
             }
             document.getElementById('status').textContent = status;
         }
